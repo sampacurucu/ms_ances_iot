@@ -1,6 +1,7 @@
 package com.example.ms_ances_iot.service;
 
 import com.example.ms_ances_iot.dto.SmartPointRequestDto;
+import com.example.ms_ances_iot.dto.SmartPointSimpleDto;
 import com.example.ms_ances_iot.entity.*;
 import com.example.ms_ances_iot.mapper.SmartPointMapper;
 import com.example.ms_ances_iot.repository.*;
@@ -34,5 +35,14 @@ public class SmartPointService {
             SmartPointEntity point = SmartPointMapper.toEntity(dto, sensor, area);
             smartPointRepository.save(point);
         }
+    }
+
+
+
+    public List<SmartPointSimpleDto> getSimplePointsByAreaId(Integer areaId) {
+        List<SmartPointEntity> entities = smartPointRepository.findByAreaId(areaId);
+        return entities.stream()
+            .map(sp -> new SmartPointSimpleDto(sp.getNombre(), sp.getX(), sp.getY()))
+            .toList();
     }
 }

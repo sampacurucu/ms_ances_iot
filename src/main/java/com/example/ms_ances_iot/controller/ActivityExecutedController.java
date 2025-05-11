@@ -7,7 +7,7 @@ import com.example.ms_ances_iot.service.ActivityExecutedService;
 // import org.springframework.http.HttpStatus;
 
 @RestController
-@RequestMapping("/api/add/activity_executed")
+@RequestMapping("/api")
 public class ActivityExecutedController {
 
     private final ActivityExecutedService activityService;
@@ -16,7 +16,7 @@ public class ActivityExecutedController {
         this.activityService = activityService;
     }
 
-    @PostMapping
+    @PostMapping("/add/activity_executed")
     public ActivityExecutedEntity saveActivity(@RequestBody ActivityExecutedDto activityDTO) {
         return activityService.saveActivity(activityDTO);
     }

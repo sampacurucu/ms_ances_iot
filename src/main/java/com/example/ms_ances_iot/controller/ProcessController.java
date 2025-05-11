@@ -8,7 +8,7 @@ import com.example.ms_ances_iot.service.ProcessService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/all/process")
+@RequestMapping("/api")
 public class ProcessController {
 
     private final ProcessService service;
@@ -17,7 +17,7 @@ public class ProcessController {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping("/all/process")
     public List<ProcessDto> getProcesses() {
         return service.getAllProcesses();
     }

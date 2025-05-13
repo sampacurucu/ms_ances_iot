@@ -5,6 +5,7 @@ import com.example.ms_ances_iot.dto.ProcessStartedResponseDto;
 import com.example.ms_ances_iot.service.ProcessStartedService;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -30,5 +31,17 @@ public class ProcessStartedController {
     public ResponseEntity<List<ProcessStartedResponseDto>> getAllStartedProcesses() {
         return ResponseEntity.ok(service.getAllProcessStarted());
     }
+
+    @PatchMapping("/update/process/started/{id}")
+    public ResponseEntity<Map<String, String>> updateFechaFin(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        String fechaFinStr = body.get("fechaFin");
+        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+        service.updateFechaFin(id, fechaFin);
+        return ResponseEntity.ok(Map.of("message", "Fecha de fin actualizada correctamente"));
+    }
+
 
 }

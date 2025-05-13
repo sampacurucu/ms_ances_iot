@@ -8,6 +8,7 @@ import com.example.ms_ances_iot.mapper.ProcessStartedResponseMapper;
 import com.example.ms_ances_iot.repository.*;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,5 +44,13 @@ public class ProcessStartedService {
             .stream()
             .map(mapperResponse::toDto)
             .collect(Collectors.toList());
-}
+    }
+
+    public void updateFechaFin(Long id, LocalDate fechaFin) {
+        ProcessStartedEntity entity = processStartedRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Proceso iniciado no encontrado"));
+        entity.setFechaFin(fechaFin);
+        entity.setEstado(false);
+        processStartedRepository.save(entity);
+    }
 }

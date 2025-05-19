@@ -1,11 +1,11 @@
-package com.example.ms_ances_iot.dto;
+// package com.example.ms_ances_iot.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+// import lombok.Getter;
+// import lombok.Setter;
 
-@Getter
-@Setter
-public class SensorResumenDto {
-    private Long id;
-    private String nombre;
-}
+// @Getter
+// @Setter
+// public class SensorResumenDto {
+//     private Long id;
+//     private String nombre;
+// }

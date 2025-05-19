@@ -1,5 +1,6 @@
 package com.example.ms_ances_iot.service;
 
+import com.example.ms_ances_iot.dto.ActivitySummaryDto;
 import com.example.ms_ances_iot.dto.ProcessStartedDto;
 import com.example.ms_ances_iot.dto.ProcessStartedResponseDto;
 import com.example.ms_ances_iot.entity.*;
@@ -26,6 +27,7 @@ public class ProcessStartedService {
     private final AreaRepository areaRepository;
     private final ProcessStartedMapper mapper;
     private final ProcessStartedResponseMapper mapperResponse;
+    private final ProcessActivityRepository processActivityRepository;
 
 
     public void saveProcessStarted(ProcessStartedDto dto) {
@@ -52,5 +54,18 @@ public class ProcessStartedService {
         entity.setFechaFin(fechaFin);
         entity.setEstado(false);
         processStartedRepository.save(entity);
+    }
+
+    public List<ActivitySummaryDto> getActivitiesByProcessStartedId(Long processStartedId) {
+        ProcessStartedEntity started = processStartedRepository.findById(processStartedId)
+                .orElseThrow(() -> new RuntimeException("Proceso iniciado no encontrado"));
+
+        Integer processId = started.getProceso().getId();
+
+        List<ProcessActivityEntity> asociaciones = processActivityRepository.findByProcessId(processId);
+
+        return asociaciones.stream()
+                .map(pa -> new ActivitySummaryDto(pa.getActivity().getId(), pa.getActivity().getName()))
+                .collect(Collectors.toList());
     }
 }

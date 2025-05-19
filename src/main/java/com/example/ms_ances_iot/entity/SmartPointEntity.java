@@ -23,9 +23,14 @@ public class SmartPointEntity {
     private double x;
     private double y;
 
+    // @ManyToOne
+    // @JoinColumn(name = "dispositivo_id")
+    // private SensorEntity dispositivo;
+
     @ManyToOne
     @JoinColumn(name = "dispositivo_id")
-    private SensorEntity dispositivo;
+    private DispositivoEntity dispositivo;
+
 
     @ManyToOne
     @JoinColumn(name = "area_id")

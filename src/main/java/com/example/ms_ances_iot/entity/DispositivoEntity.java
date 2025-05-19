@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@MappedSuperclass
+@Entity
 @Getter
 @Setter
+@Table(name = "dispositivos")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class DispositivoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

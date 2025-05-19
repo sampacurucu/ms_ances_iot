@@ -2,11 +2,16 @@ package com.example.ms_ances_iot.mapper;
 
 import java.time.LocalDate;
 
+import org.springframework.stereotype.Component;
+
 import com.example.ms_ances_iot.dto.DispositivoDto;
+import com.example.ms_ances_iot.dto.DispositivoResumenDto;
 import com.example.ms_ances_iot.dto.SensorEquipoDto;
+import com.example.ms_ances_iot.entity.DispositivoEntity;
 import com.example.ms_ances_iot.entity.EquipoEntity;
 import com.example.ms_ances_iot.entity.SensorEntity;
 
+@Component
 public class DispositivoMapper {
 
     public static SensorEntity toSensorEntity(DispositivoDto dto) {
@@ -49,5 +54,12 @@ public class DispositivoMapper {
         dto.setDireccionDispositivo(sensor.getDireccionDispositivo());
         dto.setIpGateway(sensor.getIpGateway());
         return dto;
+    }
+
+    public DispositivoResumenDto toDto(DispositivoEntity entity) {
+        if (entity instanceof SensorEntity sensor) {
+            return new DispositivoResumenDto(sensor.getId(), sensor.getNombre(), sensor.getPropiedad()); 
+        }
+        return null; // no devolver si no es sensor
     }
 }

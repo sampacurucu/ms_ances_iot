@@ -1,5 +1,6 @@
 package com.example.ms_ances_iot.controller;
 
+import com.example.ms_ances_iot.dto.ActivitySummaryDto;
 import com.example.ms_ances_iot.dto.ProcessStartedDto;
 import com.example.ms_ances_iot.dto.ProcessStartedResponseDto;
 import com.example.ms_ances_iot.service.ProcessStartedService;
@@ -41,6 +42,11 @@ public class ProcessStartedController {
         LocalDate fechaFin = LocalDate.parse(fechaFinStr);
         service.updateFechaFin(id, fechaFin);
         return ResponseEntity.ok(Map.of("message", "Fecha de fin actualizada correctamente"));
+    }
+
+    @GetMapping("/activities/process/started/{id}")
+    public List<ActivitySummaryDto> getActivitiesByProcessStarted(@PathVariable Long id) {
+        return service.getActivitiesByProcessStartedId(id);
     }
 
 

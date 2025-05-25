@@ -32,4 +32,11 @@ public class RuleDetectionActivityController {
         return ResponseEntity.ok(reglas);
     }
 
+    @GetMapping("/evaluar/reglas/proceso/{procesoId}")
+    public ResponseEntity<List<String>> evaluarReglas(@PathVariable Long procesoId) {
+        List<String> resultados = service.evaluarReglasDeProceso(procesoId);
+        return ResponseEntity.ok(resultados);
+    }
+
+
 }

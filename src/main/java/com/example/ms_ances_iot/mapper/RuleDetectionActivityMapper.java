@@ -63,6 +63,7 @@ public class RuleDetectionActivityMapper {
                 String nombre = regla.getNombre();
                 String actividad = regla.getActividad().getName();
                 String propiedad = regla.getPropiedad();
+                Long dispositivoId = regla.getDispositivo() != null ? regla.getDispositivo().getId() : null;
 
                   // Obtener nombre del dispositivo si es un sensor
                 String nombreDispositivo = "";
@@ -81,6 +82,7 @@ public class RuleDetectionActivityMapper {
                         .propiedad(propiedad)
                         .operadorYValor(operadorValor)
                         .nombreDispositivo(nombreDispositivo)
+                        .dispositivoId(dispositivoId)
                         .build());
                 }
         }

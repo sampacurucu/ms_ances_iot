@@ -1,6 +1,8 @@
 package com.example.ms_ances_iot.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ import com.example.ms_ances_iot.entity.ProcessStartedEntity;
 import com.example.ms_ances_iot.entity.SensorEntity;
 import com.example.ms_ances_iot.entity.SmartPointEntity;
 import com.example.ms_ances_iot.mapper.DispositivoMapper;
+import com.example.ms_ances_iot.rabbitmq.ConfiguracionSensorSender;
+import com.example.ms_ances_iot.rabbitmq.MensajeConfiguracionSensorDto;
 import com.example.ms_ances_iot.repository.DispositivoRepository;
 import com.example.ms_ances_iot.repository.ProcessStartedRepository;
 import com.example.ms_ances_iot.repository.SensorRepository;
@@ -28,20 +32,56 @@ public class DispositivoService {
     private final ProcessStartedRepository processStartedRepository;
     private final SmartPointRepository smartPointRepository;
     private final DispositivoMapper dispositivoMapper;
+    private final ConfiguracionSensorSender configuracionSensorSender;
 
     public DispositivoService(SensorRepository sensorRepository, DispositivoRepository dispositivoRepository,
-        ProcessStartedRepository processStartedRepository, SmartPointRepository smartPointRepository, DispositivoMapper dispositivoMapper ) {
+        ProcessStartedRepository processStartedRepository, 
+        SmartPointRepository smartPointRepository,
+        DispositivoMapper dispositivoMapper, ConfiguracionSensorSender configuracionSensorSender ) {
         this.sensorRepository = sensorRepository;
         this.dispositivoRepository = dispositivoRepository;
         this.processStartedRepository = processStartedRepository;
         this.smartPointRepository = smartPointRepository;
         this.dispositivoMapper = dispositivoMapper;
+        this.configuracionSensorSender = configuracionSensorSender;
     }
+
+    // public SensorEntity guardarDispositivoComoSensor(DispositivoDto dto) {
+    //     SensorEntity sensor = DispositivoMapper.toSensorEntity(dto);
+    //     return sensorRepository.save(sensor);
+    // }
 
     public SensorEntity guardarDispositivoComoSensor(DispositivoDto dto) {
         SensorEntity sensor = DispositivoMapper.toSensorEntity(dto);
-        return sensorRepository.save(sensor);
+        SensorEntity guardado = sensorRepository.save(sensor);
+
+        // === Construir el objeto "device" ===
+        Map<String, Object> device = new HashMap<>();
+        device.put("idLocalDevice", guardado.getId());
+        device.put("idGateway", guardado.getIpGateway());
+        device.put("connectionStatus", "online"); // Fijo por ahora
+        // device.put("batteryLevel", guardado.isDisponeBateria() ? guardado.getCapacidadBateria() : 0.0);
+        device.put("batteryLevel", 100.0);
+
+
+        // === Construir el objeto "sensor" ===
+        Map<String, Object> sensorMap = new HashMap<>();
+        sensorMap.put("idSensor", guardado.getId());
+        sensorMap.put("idDevice", guardado.getId());
+        sensorMap.put("frequency", guardado.getFrecuencia());
+
+        // === Armar el mensaje completo ===
+        MensajeConfiguracionSensorDto mensaje = new MensajeConfiguracionSensorDto();
+        mensaje.setTipo("config_sensor");
+        mensaje.setDevice(device);
+        mensaje.setSensor(sensorMap);
+
+        // === Enviar a la cola ===
+        configuracionSensorSender.enviar(mensaje);
+
+        return guardado;
     }
+
 
     public List<SensorEquipoDto> obtenerVistaSensores() {
     return sensorRepository.findAll().stream()

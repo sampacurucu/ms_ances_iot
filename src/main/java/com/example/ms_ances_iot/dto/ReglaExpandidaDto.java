@@ -14,4 +14,6 @@ public class ReglaExpandidaDto {
     private String propiedad;
     private String operadorYValor;
     private String nombreDispositivo;
+
+    private Long dispositivoId;
 }

@@ -46,11 +46,6 @@ public class DispositivoService {
         this.configuracionSensorSender = configuracionSensorSender;
     }
 
-    // public SensorEntity guardarDispositivoComoSensor(DispositivoDto dto) {
-    //     SensorEntity sensor = DispositivoMapper.toSensorEntity(dto);
-    //     return sensorRepository.save(sensor);
-    // }
-
     public SensorEntity guardarDispositivoComoSensor(DispositivoDto dto) {
         SensorEntity sensor = DispositivoMapper.toSensorEntity(dto);
         SensorEntity guardado = sensorRepository.save(sensor);
@@ -59,8 +54,7 @@ public class DispositivoService {
         Map<String, Object> device = new HashMap<>();
         device.put("idLocalDevice", guardado.getId());
         device.put("idGateway", guardado.getIpGateway());
-        device.put("connectionStatus", "online"); // Fijo por ahora
-        // device.put("batteryLevel", guardado.isDisponeBateria() ? guardado.getCapacidadBateria() : 0.0);
+        device.put("connectionStatus", "online"); 
         device.put("batteryLevel", 100.0);
 
 
@@ -89,18 +83,7 @@ public class DispositivoService {
             .collect(Collectors.toList());
     }
 
-    // public List<SensorResumenDto> obtenerResumenSensores() {
-    // return sensorRepository.findAll().stream()
-    //     .map(sensor -> {
-    //         SensorResumenDto dto = new SensorResumenDto();
-    //         dto.setId(sensor.getId());
-    //         dto.setNombre(sensor.getNombre());
-    //         return dto;
-    //     })
-    //     .collect(Collectors.toList());
-    // }
-
-     public List<DispositivoResumenDto> obtenerResumenDispositivos() {
+    public List<DispositivoResumenDto> obtenerResumenDispositivos() {
         List<DispositivoEntity> dispositivos = dispositivoRepository.findAll();
 
         return dispositivos.stream().map(dispositivo -> {

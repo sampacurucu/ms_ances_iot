@@ -17,6 +17,7 @@ public class AgriculturalActivityExecutedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String id_proceso;
     private String id_activity;
     private Integer id_production_area;
     private Long id_monitoring_point;

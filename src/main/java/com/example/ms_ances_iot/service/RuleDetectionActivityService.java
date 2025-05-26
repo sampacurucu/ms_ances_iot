@@ -106,12 +106,28 @@ public class RuleDetectionActivityService {
                         ? evaluaciones.stream().allMatch(b -> b)
                         : evaluaciones.stream().anyMatch(b -> b);
 
-                    if (resultadoFinal && !actividadRegistrada) {
-                        resultados.add("✔ Actividad '" + regla.getActividad().getName() +
-                                "' detectada con diferencia de " + diferencia +
-                                " entre medidas " + anterior.getIdMeasurement() + " y " + actual.getIdMeasurement());
+                if (resultadoFinal && !actividadRegistrada) {
+                String mensaje = "Actividad: '" + regla.getActividad().getName() +
+                "' detectada con diferencia de " + diferencia +
+                " entre medidas " + anterior.getValue() + " y " + actual.getValue();
+
+                resultados.add(mensaje);
+
+                StringBuilder info = new StringBuilder();
+                info.append("").append(mensaje).append("\n");
+                info.append("Regla: ").append(regla.getNombre()).append("\n");
+
+                for (CondicionEntity condicion : regla.getCondiciones()) {
+                    info.append("clearCondición: ")
+                        .append(condicion.getPropiedad()).append(" ")
+                        .append(condicion.getOperador()).append(" ")
+                        .append(condicion.getValor()).append("\n");
+                }
+
+                System.out.println(info);
 
                         AgriculturalActivityExecutedEntity actividadEjecutada = AgriculturalActivityExecutedEntity.builder()
+                            .id_proceso(procesoIniciado.getProceso().getId().toString())
                             .id_activity(regla.getActividad().getName())
                             .id_production_area(procesoIniciado.getArea().getId())
                             .id_monitoring_point(smartPointOpt != null ? smartPointOpt.getId() : null)
@@ -119,7 +135,7 @@ public class RuleDetectionActivityService {
                             .id_farmer(procesoIniciado.getAgricultor().getNombre())
                             .id_rule_detection_activities(regla.getId())
                             .execution_type("Detectada")
-                            .reason_activity("")
+                            .reason_activity(null)
                             .measurement_before(anterior.getValue())
                             .measurement_after(actual.getValue())
                             .date_in(anterior.getTimestamp())
@@ -143,243 +159,4 @@ public class RuleDetectionActivityService {
         return resultados;
     }
 
-
-    // public List<String> evaluarReglasDeProceso(Long procesoIniciadoId) {
-    //     ProcessStartedEntity procesoIniciado = processStartedRepo.findById(procesoIniciadoId)
-    //         .orElseThrow(() -> new RuntimeException("Proceso iniciado no encontrado"));
-
-    //     List<RuleDetectionActivityEntity> reglas = reglaRepo.findByProcesoIniciadoId(procesoIniciadoId);
-    //     List<String> resultados = new ArrayList<>();
-
-    //     for (RuleDetectionActivityEntity regla : reglas) {
-    //         Long dispositivoId = regla.getDispositivo().getId();
-
-    //         if (!(regla.getDispositivo() instanceof SensorEntity)) continue;
-
-    //         List<MeasurementEntity> mediciones = measurementRepository
-    //             .findBySensorIdAndVerificationOrderByTimestampAsc(dispositivoId, "0");
-
-    //         if (mediciones.size() < 3) {
-    //             resultados.add("⚠ No hay suficientes mediciones para evaluar la regla: " + regla.getNombre());
-    //             continue;
-    //         }
-
-    //         for (int i = 2; i < mediciones.size(); i++) {
-    //             MeasurementEntity actual = mediciones.get(i);
-    //             SmartPointEntity smartPointOpt = smartPointRepository
-    //                 .findByDispositivoIdAndAreaId(dispositivoId, procesoIniciado.getArea().getId());
-
-    //             for (int j = 1; j <= 2; j++) { // compara con i-1 e i-2
-    //                 MeasurementEntity anterior = mediciones.get(i - j);
-    //                 double diferencia = Math.abs(actual.getValue() - anterior.getValue());
-
-    //                 List<Boolean> evaluaciones = new ArrayList<>();
-
-    //                 for (CondicionEntity condicion : regla.getCondiciones()) {
-    //                     double umbral = condicion.getValor();
-    //                     String operador = condicion.getOperador();
-
-    //                     boolean cumple = switch (operador) {
-    //                         case ">" -> diferencia > umbral;
-    //                         case ">=" -> diferencia >= umbral;
-    //                         case "<" -> diferencia < umbral;
-    //                         case "<=" -> diferencia <= umbral;
-    //                         case "==" -> diferencia == umbral;
-    //                         default -> false;
-    //                     };
-
-    //                     evaluaciones.add(cumple);
-    //                 }
-
-    //                 boolean resultadoFinal;
-    //                 if ("AND".equalsIgnoreCase(regla.getOperadorCondiciones())) {
-    //                     resultadoFinal = evaluaciones.stream().allMatch(b -> b);
-    //                 } else {
-    //                     resultadoFinal = evaluaciones.stream().anyMatch(b -> b);
-    //                 }
-
-    //                 if (resultadoFinal) {
-    //                     resultados.add("✔ Actividad '" + regla.getActividad().getName() +
-    //                             "' detectada con diferencia de " + diferencia +
-    //                             " entre medidas " + anterior.getIdMeasurement() + " y " + actual.getIdMeasurement());
-
-    //                     // Actualizar verificación solo una vez
-    //                     actual.setVerification("1");
-    //                     measurementRepository.save(actual);
-
-    //                     AgriculturalActivityExecutedEntity actividadEjecutada = AgriculturalActivityExecutedEntity.builder()
-    //                         .id_activity(regla.getActividad().getName())
-    //                         .id_production_area(procesoIniciado.getArea().getId())
-    //                         .id_monitoring_point(smartPointOpt != null ? smartPointOpt.getId() : null)
-    //                         .id_activity_execution_point(smartPointOpt != null ? smartPointOpt.getId() : null)
-    //                         .id_farmer(procesoIniciado.getAgricultor().getNombre())
-    //                         .id_rule_detection_activities(regla.getId())
-    //                         .execution_type("Detectada")
-    //                         .reason_activity("")
-    //                         .measurement_before(anterior.getValue())
-    //                         .measurement_after(actual.getValue())
-    //                         .date_in(anterior.getTimestamp())
-    //                         .date_end(actual.getTimestamp())
-    //                         .build();
-
-    //                     agriculturalActivityExecutedRepository.save(actividadEjecutada);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     return resultados;
-    // }
-
-
-    // public List<String> evaluarReglasDeProceso(Long procesoIniciadoId) {
-
-    //     ProcessStartedEntity procesoIniciado = processStartedRepo.findById(procesoIniciadoId)
-    //     .orElseThrow(() -> new RuntimeException("Proceso iniciado no encontrado"));
-
-    //     List<RuleDetectionActivityEntity> reglas = reglaRepo.findByProcesoIniciadoId(procesoIniciadoId);
-    //     List<String> resultados = new ArrayList<>();
-
-    //     for (RuleDetectionActivityEntity regla : reglas) {
-    //         Long dispositivoId = regla.getDispositivo().getId();
-
-    //         if (!(regla.getDispositivo() instanceof SensorEntity)) continue;
-
-    //         // List<MeasurementEntity> mediciones = measurementRepository
-    //         //         .findBySensorIdOrderByTimestampAsc(dispositivoId);
-    //         List<MeasurementEntity> mediciones = measurementRepository
-    //         .findBySensorIdAndVerificationOrderByTimestampAsc(dispositivoId, "0");
-
-    //         if (mediciones.size() < 3) {
-    //             resultados.add("⚠ No hay suficientes mediciones para evaluar la regla: " + regla.getNombre());
-    //             continue;
-    //         }
-
-    //         boolean seDetecto = false;
-
-    //         for (int i = 2; i < mediciones.size(); i++) {
-    //             double valorActual = mediciones.get(i).getValue();
-    //             double valorAnterior = mediciones.get(i - 1).getValue();
-    //             double diferencia = Math.abs(valorActual - valorAnterior);
-
-    //             List<Boolean> evaluaciones = new ArrayList<>();
-
-    //             for (CondicionEntity condicion : regla.getCondiciones()) {
-    //                 double umbral = condicion.getValor();
-    //                 String operador = condicion.getOperador();
-
-    //                 boolean cumple = switch (operador) {
-    //                     case ">" -> diferencia > umbral;
-    //                     case ">=" -> diferencia >= umbral;
-    //                     case "<" -> diferencia < umbral;
-    //                     case "<=" -> diferencia <= umbral;
-    //                     case "==" -> diferencia == umbral;
-    //                     default -> false;
-    //                 };
-
-    //                 evaluaciones.add(cumple);
-    //             }
-
-    //             boolean resultadoFinal;
-    //             if ("AND".equalsIgnoreCase(regla.getOperadorCondiciones())) {
-    //                 resultadoFinal = evaluaciones.stream().allMatch(b -> b);
-    //             } else { // default OR
-    //                 resultadoFinal = evaluaciones.stream().anyMatch(b -> b);
-    //             }
-
-    //             if (resultadoFinal) {
-    //                 resultados.add("✔ Actividad '" + regla.getActividad().getName() +
-    //                         "' detectada con diferencia de " + diferencia +
-    //                         " en " + mediciones.get(i).getTimestamp());
-    //                 seDetecto = true;
-    //                 // MeasurementEntity medicion = mediciones.get(i);
-    //                 // medicion.setVerification("1");
-    //                 // measurementRepository.save(medicion);
-
-    //                 SmartPointEntity smartPointOpt = smartPointRepository
-    //                 .findByDispositivoIdAndAreaId(dispositivoId, procesoIniciado.getArea().getId());
-
-    //                 AgriculturalActivityExecutedEntity actividadEjecutada = AgriculturalActivityExecutedEntity.builder()
-    //                 .id_activity(regla.getActividad().getName())
-    //                 .id_production_area(procesoIniciado.getArea().getId())
-    //                 .id_monitoring_point(smartPointOpt.getId())
-    //                 .id_activity_execution_point(smartPointOpt.getId())
-    //                 .id_farmer(procesoIniciado.getAgricultor().getNombre())
-    //                 .id_rule_detection_activities(regla.getId())
-    //                 .execution_type("Detectada")
-    //                 .reason_activity("")
-    //                 .measurement_before(mediciones.get(i - 1).getValue())
-    //                 .measurement_after(mediciones.get(i).getValue())
-    //                 .date_in(mediciones.get(i-1).getTimestamp())
-    //                 .date_end(mediciones.get(i).getTimestamp())
-
-    //                 .build();
-    //                 this.agriculturalActivityExecutedRepository.save(actividadEjecutada);
-
-    //             }
-    //         }
-
-    //         if (!seDetecto) {
-    //             resultados.add("✘ Actividad '" + regla.getActividad().getName() + "' NO detectada");
-    //         }
-    //     }
-
-    //     return resultados;
-    // }
-
-
-    // public List<String> evaluarReglasDeProceso(Long procesoIniciadoId) {
-    //     List<RuleDetectionActivityEntity> reglas = reglaRepo.findByProcesoIniciadoId(procesoIniciadoId);
-    //     List<String> resultados = new ArrayList<>();
-
-    //     for (RuleDetectionActivityEntity regla : reglas) {
-    //         Long dispositivoId = regla.getDispositivo().getId();
-
-    //         // Solo aplicamos si es sensor
-    //         if (!(regla.getDispositivo() instanceof SensorEntity)) continue;
-
-    //         List<MeasurementEntity> mediciones = measurementRepository
-    //                 .findBySensorIdOrderByTimestampAsc(dispositivoId);
-
-    //         if (mediciones.size() < 3) {
-    //             resultados.add("⚠ No hay suficientes mediciones para evaluar la regla: " + regla.getNombre());
-    //             continue;
-    //         }
-
-    //         // Tomar solo la primera condición (por ahora)
-    //         CondicionEntity condicion = regla.getCondiciones().get(0);
-    //         double umbral = condicion.getValor();
-    //         String operador = condicion.getOperador(); // ejemplo: ">"
-
-    //         boolean seDetectoAlMenosUnaVez = false;
-
-    //         for (int i = 2; i < mediciones.size(); i++) {
-    //             double valorActual = mediciones.get(i).getValue();
-    //             double valorAnterior = mediciones.get(i - 1).getValue();
-    //             double diferencia = Math.abs(valorActual - valorAnterior);
-
-    //             boolean cumple = switch (operador) {
-    //                 case ">" -> diferencia > umbral;
-    //                 case ">=" -> diferencia >= umbral;
-    //                 case "<" -> diferencia < umbral;
-    //                 case "<=" -> diferencia <= umbral;
-    //                 case "==" -> diferencia == umbral;
-    //                 default -> false;
-    //             };
-
-    //             if (cumple) {
-    //                 resultados.add("✔ Actividad '" + regla.getActividad().getName() +
-    //                         "' detectada con diferencia de " + diferencia +
-    //                         " en " + mediciones.get(i).getTimestamp());
-    //                 seDetectoAlMenosUnaVez = true;
-    //             }
-    //         }
-
-    //         if (!seDetectoAlMenosUnaVez) {
-    //             resultados.add("✘ Actividad '" + regla.getActividad().getName() + "' NO detectada");
-    //         }
-    //     }
-
-    //     return resultados;
-    // }
 }

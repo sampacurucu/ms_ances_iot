@@ -1,8 +1,16 @@
 package com.example.ms_ances_iot.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import com.example.ms_ances_iot.entity.MeasurementEntity;
@@ -13,8 +21,6 @@ import com.example.ms_ances_iot.repository.SensorRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-// import aj.org.objectweb.asm.TypeReference;
-
 @Service
 public class MeasurementService {
 
@@ -22,19 +28,28 @@ public class MeasurementService {
     private final ObjectMapper objectMapper;
     private final SensorRepository sensorRepository;
 
+    private final AtomicInteger contadorMensajes = new AtomicInteger(0);
+    private Instant inicioLote;
+    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> future;
+    private static final int INACTIVIDAD_MS = 3000;
+
+    private String nombreColaActual;
+
     public MeasurementService(MeasurementRepository measurementRepository, SensorRepository sensorRepository) {
         this.measurementRepository = measurementRepository;
         this.sensorRepository = sensorRepository;
-         // Inicializar ObjectMapper
-         // Esto es necesario para convertir JSON a objetos Java
-         // y viceversa.
         this.objectMapper = new ObjectMapper();
     }
 
-    @RabbitListener(queues = RabbitMQConfig.MEDICION_QUEUE)
-    public void recibirMedicion(String mensajeJson) {
+    @RabbitListener(queues = {
+        RabbitMQConfig.MEDICION_QUEUE,
+        RabbitMQConfig.MEDICION_QUEUE_2,
+        RabbitMQConfig.MEDICION_QUEUE_3
+    })
+    public void recibirMedicion(String mensajeJson, @Header("amqp_receivedRoutingKey") String routingKey) {
+        
         try {
-            // Convertir JSON recibido a un Map
             Map<String, Object> data = objectMapper.readValue(mensajeJson, new TypeReference<>() {});
 
             Long idSensor = Long.valueOf(data.get("idSensor").toString());
@@ -43,7 +58,6 @@ public class MeasurementService {
 
             MeasurementEntity medicion = MeasurementEntity.builder()
                     .idMeasurement(Long.valueOf(data.get("idMeasurement").toString()))
-                    // .idSensor(Long.valueOf(data.get("idSensor").toString()))
                     .sensor(sensor)
                     .value(Double.valueOf(data.get("value").toString()))
                     .timestamp(data.get("timestamp").toString())
@@ -51,11 +65,28 @@ public class MeasurementService {
                     .build();
 
             measurementRepository.save(medicion);
-            System.out.println("✅ Medición recibida y guardada: " + medicion);
+            
+            if (contadorMensajes.get() == 0) {
+                inicioLote = Instant.now();
+                nombreColaActual = routingKey;
+            }
+            contadorMensajes.incrementAndGet();
+
+            if (future != null) future.cancel(false);
+            future = scheduler.schedule(() -> cerrarLote(), INACTIVIDAD_MS, TimeUnit.MILLISECONDS);
+
 
         } catch (Exception e) {
-            System.err.println("❌ Error al procesar medición: " + e.getMessage());
+            System.err.println("Error al procesar medición: " + e.getMessage());
         }
+    }
+
+    private void cerrarLote() {
+        Instant fin = Instant.now();
+        int total = contadorMensajes.getAndSet(0);
+        long duracion = Duration.between(inicioLote, fin).getSeconds();
+        System.out.println("Se consumieron " + total + " mediciones desde la cola [" + nombreColaActual + "] en " + duracion + " s.");
+
     }
     
 }

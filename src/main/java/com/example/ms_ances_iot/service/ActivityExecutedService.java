@@ -49,8 +49,14 @@ public class ActivityExecutedService {
 
         
         AgriculturalActivityExecutedEntity activityE = ActivityExecutedMapper.toNewEntity(activityDTO);
-        activityE.setId_proceso(procesoIniciado.getProceso().getId().toString());
+        activityE.setId_proceso_started(procesoIniciado.getId().toString());
         activityE.setId_activity(activity.getName());
+
+        System.out.println("Actividad ejecutada recibida desde móvil:");
+        System.out.println("Actividad: " + activity.getName());
+        System.out.println("Área producción: " + activityDTO.getIdProducctionArea());
+        System.out.println("Fecha: " + activityDTO.getExecutionTime());
+
         return activityRepository.save(activityE);
     }
 }

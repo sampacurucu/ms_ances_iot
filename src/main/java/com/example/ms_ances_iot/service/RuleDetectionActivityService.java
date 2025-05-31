@@ -127,7 +127,7 @@ public class RuleDetectionActivityService {
                 System.out.println(info);
 
                         AgriculturalActivityExecutedEntity actividadEjecutada = AgriculturalActivityExecutedEntity.builder()
-                            .id_proceso(procesoIniciado.getProceso().getId().toString())
+                            .id_proceso_started(procesoIniciado.getId().toString())
                             .id_activity(regla.getActividad().getName())
                             .id_production_area(procesoIniciado.getArea().getId())
                             .id_monitoring_point(smartPointOpt != null ? smartPointOpt.getId() : null)

@@ -35,6 +35,7 @@ public class MeasurementService {
     private static final int INACTIVIDAD_MS = 3000;
 
     private String nombreColaActual;
+    private long tiempoTotalAcumulado = 0;   
 
     public MeasurementService(MeasurementRepository measurementRepository, SensorRepository sensorRepository) {
         this.measurementRepository = measurementRepository;
@@ -59,10 +60,16 @@ public class MeasurementService {
             MeasurementEntity medicion = MeasurementEntity.builder()
                     .idMeasurement(Long.valueOf(data.get("idMeasurement").toString()))
                     .sensor(sensor)
+                    // .idSensor(idSensor)
                     .value(Double.valueOf(data.get("value").toString()))
                     .timestamp(data.get("timestamp").toString())
                     .verification(data.get("verification").toString())
                     .build();
+
+                    // System.out.println("Medición recibida → ID: " + medicion.getIdMeasurement() +
+                    // ", Sensor: " + sensor.getNombre() +
+                    // ", Valor: " + medicion.getValue() +
+                    // ", Timestamp: " + medicion.getTimestamp());
 
             measurementRepository.save(medicion);
             
@@ -85,7 +92,10 @@ public class MeasurementService {
         Instant fin = Instant.now();
         int total = contadorMensajes.getAndSet(0);
         long duracion = Duration.between(inicioLote, fin).getSeconds();
+
+        tiempoTotalAcumulado += duracion;
         System.out.println("Se consumieron " + total + " mediciones desde la cola [" + nombreColaActual + "] en " + duracion + " s.");
+        System.out.println(" Tiempo total acumulado: " + tiempoTotalAcumulado + " s (" + (tiempoTotalAcumulado / 60.0) + " min)");
 
     }
     

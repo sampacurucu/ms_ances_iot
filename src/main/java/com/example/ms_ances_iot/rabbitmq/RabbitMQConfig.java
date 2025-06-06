@@ -45,4 +45,22 @@ public class RabbitMQConfig {
         return new Queue(MEDICION_QUEUE_3, true);
     }
 
+    public static final String MEDICION_QUEUE_4 = "raspberry4/EnviarMediciones";
+    @Bean
+    public Queue medicionesQueue4() {
+        return new Queue(MEDICION_QUEUE_4, true);
+    }
+
+    public static final String MEDICION_QUEUE_5 = "raspberry5/EnviarMediciones";
+    @Bean
+    public Queue medicionesQueue5() {
+        return new Queue(MEDICION_QUEUE_5, true);
+    }
+
+    public static final String MEDICION_QUEUE_6 = "raspberry6/EnviarMediciones";
+    @Bean
+    public Queue medicionesQueue6() {
+        return new Queue(MEDICION_QUEUE_6, true);
+    }
+
 }
